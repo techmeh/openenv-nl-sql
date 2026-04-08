@@ -1,0 +1,13 @@
+spec_version: 1
+
+name: nl_sql_analytics_env
+
+tasks:
+  - name: nl_sql_query
+    description: Generate SQL query from natural language
+
+  - name: customer_lookup
+    description: Lookup customers using filters
+
+  - name: sales_summary
+    description: Generate aggregated sales queries
