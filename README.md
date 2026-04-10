@@ -9,6 +9,20 @@ pinned: false
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
 
+<<<<<<< HEAD
+=======
+---
+title: Openenv Nl Sql Converter
+emoji: 🐢
+colorFrom: yellow
+colorTo: gray
+sdk: docker
+pinned: false
+---
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+
+>>>>>>> 4605e07168916b6ad004ad3f5b1d2540a6769952
 
 # NL-SQL Analytics Environment — OpenEnv Submission
 
@@ -64,4 +78,8 @@ source venv/bin/activate
 venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
+<<<<<<< HEAD
 curl -X POST http://127.0.0.1:7860/reset
+=======
+curl -X POST http://127.0.0.1:7860/reset
+>>>>>>> 4605e07168916b6ad004ad3f5b1d2540a6769952
