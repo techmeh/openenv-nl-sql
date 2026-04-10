@@ -246,7 +246,7 @@ async def main():
         obs = env.reset()
 
         # ✅ Get task from environment
-        task_name = env.state["task"]["task"]
+        task_name = env.state.task
 
         # Log start
         log_start(
@@ -256,7 +256,7 @@ async def main():
         )
 
         # Get question
-        question = obs.message
+        question = obs.observation["message"]
 
         print(
             f"[QUESTION] {question}",
@@ -291,7 +291,7 @@ async def main():
 
             steps_taken = step
 
-            previous_feedback = obs.message
+            previous_feedback = obs.observation["message"]
 
             log_step(
                 step=step,

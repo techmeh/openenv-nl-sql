@@ -9,11 +9,18 @@ from openenv.core.env_server.types import (
 from openenv.core.env_server import Environment
 import sys
 from pathlib import Path
-
+import sqlparse
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from models import NlSqlAnalyticsState, NlSqlAnalyticsAction, NlSqlAnalyticsObservation
 
-
+def normalize_sql(sql: str) -> str:
+        return sqlparse.format(
+            sql,
+            keyword_case="upper",
+            strip_comments=True,
+            reindent=False
+        ).strip().rstrip(";")
+    
 class NlSqlAnalyticsEnvironment(Environment):
     SUPPORTS_CONCURRENT_SESSIONS = True
 
@@ -77,8 +84,10 @@ class NlSqlAnalyticsEnvironment(Environment):
 
     def step(self, action: NlSqlAnalyticsAction):
         print("STEP CALLED")
+
         current_task = getattr(self.state, "task", None)
         expected_sql = getattr(self.state, "expected_sql", None)
+
         print("Current task:", current_task)
 
         if current_task is None:
@@ -89,31 +98,45 @@ class NlSqlAnalyticsEnvironment(Environment):
                 reward=0.0,
                 done=False
             )
+
             self.last_observation = observation
-            return StepResponse(observation=observation.model_dump())
 
-        # Compare predicted SQL
+            return StepResponse(
+                observation=observation.model_dump(),
+                reward=0.0,
+                done=False
+            )
+
         predicted_sql = action.sql_query
-        correct = predicted_sql.strip().lower() == expected_sql.strip().lower()
-        reward = 1.0 if correct else 0.0
 
-        # Create observation
+        # Normalize SQL
+        predicted_sql_norm = normalize_sql(predicted_sql)
+        expected_sql_norm = normalize_sql(expected_sql)
+
+        print("Generated:", predicted_sql_norm)
+        print("Expected :", expected_sql_norm)
+
+        correct = predicted_sql_norm == expected_sql_norm
+
+        reward = 1.0 if correct else 0.0
+        done = correct
+
         observation = NlSqlAnalyticsObservation(
             result=None,
             correct=correct,
             message="Evaluation complete",
             reward=reward,
-            done=True
+            done=done
         )
 
         self.last_observation = observation
-        self.done = True
+        self.done = done
 
-        return StepResponse(observation=observation.model_dump())
-    
-    def state(self) -> NlSqlAnalyticsObservation:
-        """
-        Returns the current environment observation in the required format.
-        """
-        # If you already keep the latest observation in self._obs:
-        return self._obs
+        return StepResponse(
+            observation=observation.model_dump(),
+            reward=reward,
+            done=done
+        )
+        
+    def state(self):
+        return self.last_observation

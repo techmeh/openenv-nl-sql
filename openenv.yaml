@@ -2,6 +2,10 @@ spec_version: 1
 
 name: nl_sql_analytics_env
 
+environment:
+  module: server.nl_sql_analytics_env_environment
+  class: NlSqlAnalyticsEnvironment
+
 tasks:
   - name: nl_sql_query
     description: Generate SQL query from natural language
@@ -11,3 +15,29 @@ tasks:
 
   - name: sales_summary
     description: Generate aggregated sales queries
+
+action:
+  type: object
+  properties:
+    question:
+      type: string
+    sql_query:
+      type: string
+  required:
+    - question
+    - sql_query
+
+observation:
+  type: object
+  properties:
+    result:
+      type: string
+      nullable: true
+    correct:
+      type: boolean
+    message:
+      type: string
+    reward:
+      type: number
+    done:
+      type: boolean
