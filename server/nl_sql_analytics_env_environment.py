@@ -118,7 +118,18 @@ class NlSqlAnalyticsEnvironment(Environment):
 
         correct = predicted_sql_norm == expected_sql_norm
 
-        reward = 1.0 if correct else 0.0
+        # Task-specific grading
+        if self.state.task == "nl_sql_query":
+            reward = 0.85 if correct else 0.2
+
+        elif self.state.task == "customer_lookup":
+            reward = 0.9 if correct else 0.3
+
+        elif self.state.task == "sales_summary":
+            reward = 0.8 if correct else 0.25
+
+        else:
+            reward = 0.5
         done = correct
 
         observation = NlSqlAnalyticsObservation(
