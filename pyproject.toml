@@ -21,11 +21,11 @@ dev = [
     "pytest-cov>=4.0.0",
 ]
 
-# ✅ REQUIRED — server entry point
+
 [project.scripts]
 server = "server.app:main"
 
-# ✅ Package configuration
+
 [tool.setuptools]
 include-package-data = true
 
