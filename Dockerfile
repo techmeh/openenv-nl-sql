@@ -30,7 +30,10 @@ COPY --from=builder /app/database /app/database
 COPY --from=builder /app/openenv.yaml /app/openenv.yaml
 COPY --from=builder /app/models.py /app/models.py
 COPY --from=builder /app/graders /app/graders
-
+# Copy required project metadata
+COPY --from=builder /app/pyproject.toml /app/pyproject.toml
+COPY --from=builder /app/uv.lock /app/uv.lock
+COPY --from=builder /app/README.md /app/README.md
 # Set environment variables
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app:$PYTHONPATH"
