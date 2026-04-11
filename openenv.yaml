@@ -5,16 +5,20 @@ name: nl_sql_analytics_env
 environment:
   module: server.nl_sql_analytics_env_environment
   class: NlSqlAnalyticsEnvironment
+  
 
 tasks:
   - name: nl_sql_query
     description: Generate SQL query from natural language
+    grader: graders/nl_sql_query_grader.py
 
   - name: customer_lookup
     description: Lookup customers using filters
+    grader: graders/customer_lookup_grader.py
 
   - name: sales_summary
     description: Generate aggregated sales queries
+    grader: graders/sales_summary_grader.py
 
 action:
   type: object
