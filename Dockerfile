@@ -29,6 +29,7 @@ COPY --from=builder /app/server /app/server
 COPY --from=builder /app/database /app/database
 COPY --from=builder /app/openenv.yaml /app/openenv.yaml
 COPY --from=builder /app/models.py /app/models.py
+COPY --from=builder /app/graders /app/graders
 
 # Set environment variables
 ENV PATH="/app/.venv/bin:$PATH"

@@ -1,4 +1,17 @@
 def grade(action, observation):
-    if action.get("sql_query") and observation.get("correct"):
-        return {"score": 1, "message": "Valid output"}
-    return {"score": 0, "message": "Invalid or missing output"}
+
+    predicted = action.get("sql_query", "")
+
+    expected_sql = "SELECT SUM(amount) FROM sales"
+
+    if predicted.lower().strip() == expected_sql.lower().strip():
+
+        return {
+            "score": 0.8,
+            "message": "Correct aggregation query"
+        }
+
+    return {
+        "score": 0.25,
+        "message": "Incorrect aggregation query"
+    }
