@@ -246,7 +246,8 @@ async def main():
         obs = env.reset()
 
         # ✅ Get task from environment
-        task_name = env.state.task
+        # task_name = env.state.task
+        task_name = "nl_sql_query"
 
         # Log start
         log_start(
@@ -256,7 +257,7 @@ async def main():
         )
 
         # Get question
-        question = obs.observation["message"]
+        question = obs.message
 
         print(
             f"[QUESTION] {question}",
@@ -291,7 +292,7 @@ async def main():
 
             steps_taken = step
 
-            previous_feedback = obs.observation["message"]
+            previous_feedback = obs.message
 
             log_step(
                 step=step,
