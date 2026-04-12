@@ -1,17 +1,10 @@
-def grade(action, observation):
+def grade(task, prediction, reference, observation):
 
-    predicted = action.get("sql_query", "")
+    predicted = prediction.get("sql_query", "")
 
     expected_sql = "SELECT * FROM customers WHERE id = 123"
 
     if predicted.lower().strip() == expected_sql.lower().strip():
+        return 0.88
 
-        return {
-            "score": 0.85,
-            "message": "Correct lookup query"
-        }
-
-    return {
-        "score": 0.3,
-        "message": "Incorrect lookup query"
-    }
+    return 0.15
