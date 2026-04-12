@@ -11,11 +11,8 @@ from models import (
 
 
 class NlSqlAnalyticsEnvironment(Environment):
-    """
-    SQL Analytics Environment
-    """
 
-    SUPPORTS_CONCURRENT_SESSIONS: bool = True
+    SUPPORTS_CONCURRENT_SESSIONS: bool = False
 
     def __init__(self):
         self._state = State(
@@ -67,11 +64,12 @@ class NlSqlAnalyticsEnvironment(Environment):
 
         self._current_task = selected_task
 
+        # reward MUST be strictly between 0 and 1
         return NlSqlAnalyticsObservation(
             result=None,
             correct=False,
             message=selected_task["question"],
-            reward=0.5,
+            reward=0.1,   # FIXED (was 0.5 → OK but now safe baseline)
             done=False
         )
 
@@ -83,10 +81,11 @@ class NlSqlAnalyticsEnvironment(Environment):
                 result=None,
                 correct=False,
                 message="Environment not reset.",
-                reward=0,
+                reward=0.0,
                 done=False
             )
 
+        # robust action parsing
         if isinstance(action, dict):
             predicted_sql = action.get("sql_query", "")
         else:
@@ -96,7 +95,8 @@ class NlSqlAnalyticsEnvironment(Environment):
 
         correct = predicted_sql.strip().upper() == expected_sql.strip().upper()
 
-        reward = 0.91 if correct else 0.12  # MUST be (0,1)
+        # MUST be strictly between 0 and 1 (NEVER 0 or 1)
+        reward = 0.9 if correct else 0.2
 
         self._state.step_count += 1
 
@@ -108,11 +108,7 @@ class NlSqlAnalyticsEnvironment(Environment):
             done=correct
         )
 
-    # STATE (STRICT OFFICIAL STYLE)
+    # STATE
     @property
     def state(self) -> State:
-        """
-        Return current environment state.
-        MUST return openenv State object.
-        """
         return self._state
