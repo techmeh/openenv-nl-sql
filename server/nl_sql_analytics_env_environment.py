@@ -1,31 +1,31 @@
-# nl_sql_analytics_env_environment.py
-from typing import Optional
 from uuid import uuid4
+from typing import Optional
 
-from openenv.core.env_server.types import (
-    ResetResponse,
-    StepResponse,
+from openenv.core.env_server.interfaces import Environment
+from openenv.core.env_server.types import State
+
+from models import (
+    NlSqlAnalyticsAction,
+    NlSqlAnalyticsObservation
 )
-from openenv.core.env_server import Environment
-import sys
-from pathlib import Path
-import sqlparse
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-from models import NlSqlAnalyticsState, NlSqlAnalyticsAction, NlSqlAnalyticsObservation
 
-def normalize_sql(sql: str) -> str:
-        return sqlparse.format(
-            sql,
-            keyword_case="upper",
-            strip_comments=True,
-            reindent=False
-        ).strip().rstrip(";")
-    
+
 class NlSqlAnalyticsEnvironment(Environment):
-    SUPPORTS_CONCURRENT_SESSIONS = True
+    """
+    SQL Analytics Environment
+    """
+
+    SUPPORTS_CONCURRENT_SESSIONS: bool = True
 
     def __init__(self):
-        super().__init__()
+        self._state = State(
+            episode_id=str(uuid4()),
+            step_count=0
+        )
+
+        self._reset_count = 0
+        self._current_task = None
+
         self.tasks = [
             {
                 "task": "nl_sql_query",
@@ -44,31 +44,30 @@ class NlSqlAnalyticsEnvironment(Environment):
             }
         ]
 
-    def reset(self, task_name: Optional[str] = None):
-        print("RESET CALLED")
-        print("Task received:", task_name)
+    # RESET
+    def reset(self, task_name: Optional[str] = None) -> NlSqlAnalyticsObservation:
+
+        self._state = State(
+            episode_id=str(uuid4()),
+            step_count=0
+        )
+
+        self._reset_count += 1
 
         if task_name is None:
             task_name = "nl_sql_query"
 
-        # Select the task
-        selected_task = next((t for t in self.tasks if t["task"] == task_name), None)
-        if selected_task is None:
-            raise ValueError(f"Invalid task name: {task_name}")
-
-        # Initialize state
-        self.state = NlSqlAnalyticsState(
-            task=selected_task["task"],
-            expected_sql=selected_task["expected_sql"],
-            step_count=0
+        selected_task = next(
+            (t for t in self.tasks if t["task"] == task_name),
+            None
         )
-        self.done = False
 
-        print("Selected task:", self.state.task)
-        print("Expected SQL:", self.state.expected_sql)
+        if selected_task is None:
+            raise ValueError(f"Invalid task: {task_name}")
 
-        # Create observation
-        observation = NlSqlAnalyticsObservation(
+        self._current_task = selected_task
+
+        return NlSqlAnalyticsObservation(
             result=None,
             correct=False,
             message=selected_task["question"],
@@ -76,63 +75,29 @@ class NlSqlAnalyticsEnvironment(Environment):
             done=False
         )
 
-        # Save last observation
-        self.last_observation = observation
+    # STEP
+    def step(self, action: NlSqlAnalyticsAction) -> NlSqlAnalyticsObservation:
 
-        # Return serialized observation (dictionary) only
-        return ResetResponse(observation=observation.model_dump())
-
-    def step(self, action: NlSqlAnalyticsAction):
-        print("STEP CALLED")
-
-        current_task = getattr(self.state, "task", None)
-        expected_sql = getattr(self.state, "expected_sql", None)
-
-        print("Current task:", current_task)
-
-        if current_task is None:
-            observation = NlSqlAnalyticsObservation(
+        if self._current_task is None:
+            return NlSqlAnalyticsObservation(
                 result=None,
                 correct=False,
-                message="Environment not reset. Call /reset first.",
+                message="Environment not reset.",
                 reward=0.0,
                 done=False
             )
 
-            self.last_observation = observation
+        predicted_sql = action.sql_query.strip().upper()
+        expected_sql = self._current_task["expected_sql"].strip().upper()
 
-            return StepResponse(
-                observation=observation.model_dump(),
-                reward=0.0,
-                done=False
-            )
+        correct = predicted_sql == expected_sql
 
-        predicted_sql = action.sql_query
-
-        # Normalize SQL
-        predicted_sql_norm = normalize_sql(predicted_sql)
-        expected_sql_norm = normalize_sql(expected_sql)
-
-        print("Generated:", predicted_sql_norm)
-        print("Expected :", expected_sql_norm)
-
-        correct = predicted_sql_norm == expected_sql_norm
-
-        # Task-specific grading
-        if self.state.task == "nl_sql_query":
-            reward = 0.85 if correct else 0.2
-
-        elif self.state.task == "customer_lookup":
-            reward = 0.9 if correct else 0.3
-
-        elif self.state.task == "sales_summary":
-            reward = 0.8 if correct else 0.25
-
-        else:
-            reward = 0.5
+        reward = 1.0 if correct else 0.2
         done = correct
 
-        observation = NlSqlAnalyticsObservation(
+        self._state.step_count += 1
+
+        return NlSqlAnalyticsObservation(
             result=None,
             correct=correct,
             message="Evaluation complete",
@@ -140,14 +105,11 @@ class NlSqlAnalyticsEnvironment(Environment):
             done=done
         )
 
-        self.last_observation = observation
-        self.done = done
-
-        return StepResponse(
-            observation=observation.model_dump(),
-            reward=reward,
-            done=done
-        )
-        
-    def state(self):
-        return self.last_observation
+    # STATE (STRICT OFFICIAL STYLE)
+    @property
+    def state(self) -> State:
+        """
+        Return current environment state.
+        MUST return openenv State object.
+        """
+        return self._state
