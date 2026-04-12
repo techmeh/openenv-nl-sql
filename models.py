@@ -1,20 +1,26 @@
-from openenv.core.env_server.types import State, Action, BaseModel
-from typing import Optional, Any
+from pydantic import BaseModel
+from typing import Optional
 
-class NlSqlAnalyticsState(State):
-    task: Optional[str] = None
-    expected_sql: Optional[str] = None
+
+# STATE
+class NlSqlAnalyticsState(BaseModel):
+
+    task: str
+    expected_sql: str
     step_count: int = 0
-    done: bool = False
-    observation: Optional[dict] = None
 
-class NlSqlAnalyticsAction(Action):
-    question: str
+
+# ACTION
+class NlSqlAnalyticsAction(BaseModel):
+
     sql_query: str
 
+
 class NlSqlAnalyticsObservation(BaseModel):
-    result: Optional[Any] = None
-    correct: bool = False
+
+    result: Optional[str] = None
+    correct: bool
     message: str
-    reward: Optional[float] = None
-    done: bool = False
+
+    reward: float
+    done: bool
