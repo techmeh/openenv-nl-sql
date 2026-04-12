@@ -22,12 +22,9 @@ tasks:
 action:
   type: object
   properties:
-    question:
-      type: string
     sql_query:
       type: string
   required:
-    - question
     - sql_query
 
 observation:
@@ -36,11 +33,13 @@ observation:
     result:
       type: string
       nullable: true
+
     correct:
       type: boolean
+
     message:
       type: string
-    reward:
-      type: number
-    done:
-      type: boolean
+
+  required:
+    - correct
+    - message
