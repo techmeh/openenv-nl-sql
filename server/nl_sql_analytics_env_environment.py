@@ -71,29 +71,32 @@ class NlSqlAnalyticsEnvironment(Environment):
             result=None,
             correct=False,
             message=selected_task["question"],
-            reward=0.0,
+            reward=0.5,
             done=False
         )
 
     # STEP
-    def step(self, action: NlSqlAnalyticsAction) -> NlSqlAnalyticsObservation:
+    def step(self, action) -> NlSqlAnalyticsObservation:
 
         if self._current_task is None:
             return NlSqlAnalyticsObservation(
                 result=None,
                 correct=False,
                 message="Environment not reset.",
-                reward=0.0,
+                reward=0,
                 done=False
             )
 
-        predicted_sql = action.sql_query.strip().upper()
-        expected_sql = self._current_task["expected_sql"].strip().upper()
+        if isinstance(action, dict):
+            predicted_sql = action.get("sql_query", "")
+        else:
+            predicted_sql = getattr(action, "sql_query", "")
 
-        correct = predicted_sql == expected_sql
+        expected_sql = self._current_task["expected_sql"]
 
-        reward = 1.0 if correct else 0.2
-        done = correct
+        correct = predicted_sql.strip().upper() == expected_sql.strip().upper()
+
+        reward = 0.91 if correct else 0.12  # MUST be (0,1)
 
         self._state.step_count += 1
 
@@ -102,7 +105,7 @@ class NlSqlAnalyticsEnvironment(Environment):
             correct=correct,
             message="Evaluation complete",
             reward=reward,
-            done=done
+            done=correct
         )
 
     # STATE (STRICT OFFICIAL STYLE)
