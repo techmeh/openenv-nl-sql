@@ -9,15 +9,15 @@ environment:
 tasks:
   - name: nl_sql_query
     description: Generate SQL query from natural language
-    grader: graders.nl_sql_query_grader.grade
+    grader: graders.nl_sql_query_grader
 
   - name: customer_lookup
     description: Lookup customers using filters
-    grader: graders.customer_lookup_grader.grade
+    grader: graders.customer_lookup_grader
 
   - name: sales_summary
     description: Generate aggregated sales queries
-    grader: graders.sales_summary_grader.grade
+    grader: graders.sales_summary_grader
 
 action:
   type: object
