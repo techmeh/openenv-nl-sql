@@ -14,6 +14,8 @@ print("APP loaded")
 OPENENV_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "openenv.yaml")
 )
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 print("openenv.yaml exists:", os.path.exists(OPENENV_PATH))
 
@@ -42,18 +44,19 @@ from models import (
     NlSqlAnalyticsState
 )
 
-from server.nl_sql_analytics_env_environment import (
-    NlSqlAnalyticsEnvironment
-)
+from server.nl_sql_analytics_env_environment import NlSqlAnalyticsEnvironment
 
-env_factory = lambda: NlSqlAnalyticsEnvironment()
+ENV_INSTANCE = NlSqlAnalyticsEnvironment()
+
+env_factory = lambda: ENV_INSTANCE
 
 app = create_app(
     env_factory,                        # ✅ MUST be callable factory
     NlSqlAnalyticsAction,
     NlSqlAnalyticsObservation,
     env_name="nl_sql_analytics_env",
-    max_concurrent_envs=1
+    max_concurrent_envs=1,
+    concurrency_config=None
 )
 # Custom routes
 router = APIRouter()
