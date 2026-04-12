@@ -9,9 +9,9 @@ def normalize_sql(sql: str) -> str:
     ).strip().rstrip(";")
 
 
-def grade(action, observation):
+def grade(task, prediction, reference, observation):
 
-    predicted = action.get("sql_query", "")
+    predicted = prediction.get("sql_query", "")
 
     expected_sql = "SELECT name FROM customers"
 
@@ -19,12 +19,6 @@ def grade(action, observation):
     expected = normalize_sql(expected_sql)
 
     if predicted == expected:
-        return {
-            "score": 0.9,
-            "message": "Correct SQL"
-        }
+        return 0.91   # ✅ MUST be float, not dict
 
-    return {
-        "score": 0.2,
-        "message": "Incorrect SQL"
-    }
+    return 0.12       # ✅ MUST be float, not dict
