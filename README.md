@@ -65,3 +65,15 @@ venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 curl -X POST http://127.0.0.1:7860/reset
+
+Validation steps
+malav@MyBook MINGW64 ~
+$ curl -X POST https://malavikad25-openenv-nl-sql-converter.hf.space/reset -H "X-Session-Id: 123"
+{"observation":{"result":null,"correct":false,"message":"Show all customer names"},"reward":0.1,"done":false}
+malav@MyBook MINGW64 ~
+$ curl -X POST https://malavikad25-openenv-nl-sql-converter.hf.space/step -H "Content-Type: application/json" -d '{"action": {"sql_query": "SELECT name FROM customers"}}' -H "X-Session-Id: 123"
+{"observation":{"result":null,"correct":true,"message":"Evaluation complete"},"reward":0.9,"done":true}
+malav@MyBook MINGW64 ~
+$ curl https://malavikad25-openenv-nl-sql-converter.hf.space/health             {"status":"healthy"}
+malav@MyBook MINGW64 ~
+$ curl https://malavikad25-openenv-nl-sql-converter.hf.space/state              {"episode_id":"72abff6a-13e7-4c8c-8d1d-0ab8ba983e74","step_count":1}
